@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     max_active_borrowings: int = 3
     borrow_duration_days: int = 14
 
+    login_rate_limit_per_minute: int = 10
+    register_rate_limit_per_minute: int = 20
+
     @model_validator(mode="after")
     def validate_secrets(self) -> "Settings":
         if not self.database_url:

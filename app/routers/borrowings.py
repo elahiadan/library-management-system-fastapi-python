@@ -59,15 +59,19 @@ def return_book(
     summary="List my active borrowings (member)",
 )
 def my_active_borrowings(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_member),
 ):
-    records = borrowing_service.list_active_borrowings(db, current_user.id)
+    records, total = borrowing_service.list_active_borrowings(
+        db, current_user.id, page, page_size
+    )
     return success(
         "Active borrowings retrieved successfully",
         BorrowingListOut(
             items=[BorrowOut.model_validate(r) for r in records],
-            meta=build_page_meta(1, len(records), len(records)),
+            meta=build_page_meta(page, page_size, total),
         ),
     )
 
@@ -79,15 +83,19 @@ def my_active_borrowings(
     summary="List my borrowing history (member)",
 )
 def my_borrowing_history(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_member),
 ):
-    records = borrowing_service.list_borrowing_history(db, current_user.id)
+    records, total = borrowing_service.list_borrowing_history(
+        db, current_user.id, page, page_size
+    )
     return success(
         "Borrowing history retrieved successfully",
         BorrowingListOut(
             items=[BorrowOut.model_validate(r) for r in records],
-            meta=build_page_meta(1, len(records), len(records)),
+            meta=build_page_meta(page, page_size, total),
         ),
     )
 

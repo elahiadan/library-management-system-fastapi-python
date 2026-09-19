@@ -104,6 +104,8 @@ cp .env.example .env
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Token lifetime                                   | `1440` |
 | `MAX_ACTIVE_BORROWINGS`     | Max simultaneous borrowings per member             | `3` |
 | `BORROW_DURATION_DAYS`      | Borrow period in days                              | `14` |
+| `LOGIN_RATE_LIMIT_PER_MINUTE` | Max login attempts per IP per minute             | `10` |
+| `REGISTER_RATE_LIMIT_PER_MINUTE` | Max register attempts per IP per minute       | `20` |
 | `API_PREFIX`                | Global URL prefix                                  | `/api` |
 
 ## Migrations

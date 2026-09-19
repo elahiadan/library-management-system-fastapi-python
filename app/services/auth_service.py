@@ -5,12 +5,14 @@ from app.core.exceptions import AuthenticationError, DuplicateResource
 from app.core.security import create_access_token, get_password_hash, verify_password
 from app.models.user import User, UserRole
 
+_DUMMY_HASH = get_password_hash("timing-equalizer-not-a-real-password")
+
 
 def register(db: Session, payload) -> User:
     email = payload.email.lower().strip()
     existing = db.scalar(select(User).where(func.lower(User.email) == email))
     if existing is not None:
-        raise DuplicateResource("An account with this email already exists")
+        raise DuplicateResource("Unable to register with these details")
 
     user = User(
         name=payload.name.strip(),
@@ -26,7 +28,10 @@ def register(db: Session, payload) -> User:
 
 def authenticate(db: Session, email: str, password: str) -> User:
     user = db.scalar(select(User).where(func.lower(User.email) == email.lower().strip()))
-    if user is None or not verify_password(password, user.password_hash):
+    if user is None:
+        verify_password(password, _DUMMY_HASH)
+        raise AuthenticationError("Invalid email or password")
+    if not verify_password(password, user.password_hash):
         raise AuthenticationError("Invalid email or password")
     if not user.is_active:
         raise AuthenticationError("Your account is inactive")

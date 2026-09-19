@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.database import get_db
+from app.core.rate_limit import rate_limit
 from app.core.responses import success
 from app.dependencies.auth import get_current_user
 from app.models.user import User
@@ -17,6 +19,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     "/register",
     status_code=201,
     response_model=Envelope[UserOut],
+    dependencies=[Depends(rate_limit(settings.register_rate_limit_per_minute))],
     summary="Register a new member account",
 )
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
@@ -27,6 +30,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
 @router.post(
     "/login",
     response_model=Envelope[TokenResponse],
+    dependencies=[Depends(rate_limit(settings.login_rate_limit_per_minute))],
     summary="Authenticate and receive a JWT access token",
 )
 def login(payload: LoginRequest, db: Session = Depends(get_db)):

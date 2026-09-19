@@ -112,10 +112,11 @@ def update_book(db: Session, book_id: int, payload) -> Book:
     if payload.published_year is not None:
         book.published_year = payload.published_year
     if payload.total_copies is not None:
-        if payload.total_copies < book.available_copies:
+        borrowed_copies = book.total_copies - book.available_copies
+        if payload.total_copies < borrowed_copies:
             raise AppError(
                 status_code=400,
-                message="total_copies cannot be less than available_copies",
+                message="total_copies cannot be less than the number of copies currently on loan",
             )
         book.available_copies += payload.total_copies - book.total_copies
         book.total_copies = payload.total_copies

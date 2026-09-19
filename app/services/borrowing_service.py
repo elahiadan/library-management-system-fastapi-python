@@ -127,26 +127,36 @@ def return_book(db: Session, current_user: User, borrowing_id: int) -> Borrowing
     return borrowing
 
 
-def list_active_borrowings(db: Session, user_id: int):
-    records = db.scalars(
+def list_active_borrowings(db: Session, user_id: int, page: int, page_size: int):
+    query = (
         select(Borrowing)
         .where(Borrowing.user_id == user_id, Borrowing.returned_at.is_(None))
-        .options(*_BORROWING_LOADS)
         .order_by(Borrowing.borrowed_at.desc())
+    )
+    total = db.scalar(select(func.count()).select_from(query.subquery()))
+    records = db.scalars(
+        query.options(*_BORROWING_LOADS)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
     ).all()
     _mark_effective_statuses(records)
-    return records
+    return records, total
 
 
-def list_borrowing_history(db: Session, user_id: int):
-    records = db.scalars(
+def list_borrowing_history(db: Session, user_id: int, page: int, page_size: int):
+    query = (
         select(Borrowing)
         .where(Borrowing.user_id == user_id)
-        .options(*_BORROWING_LOADS)
         .order_by(Borrowing.borrowed_at.desc())
+    )
+    total = db.scalar(select(func.count()).select_from(query.subquery()))
+    records = db.scalars(
+        query.options(*_BORROWING_LOADS)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
     ).all()
     _mark_effective_statuses(records)
-    return records
+    return records, total
 
 
 def list_all_borrowings(

@@ -15,6 +15,14 @@ class BookCreate(BaseModel):
     total_copies: int = Field(ge=0)
     author_id: int
 
+    @field_validator("title")
+    @classmethod
+    def _validate_title(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("title cannot be blank")
+        return value
+
     @field_validator("isbn")
     @classmethod
     def _validate_isbn(cls, value: str) -> str:
@@ -28,6 +36,16 @@ class BookUpdate(BaseModel):
     published_year: int | None = Field(default=None, ge=1000, le=2100)
     total_copies: int | None = Field(default=None, ge=0)
     author_id: int | None = None
+
+    @field_validator("title")
+    @classmethod
+    def _validate_title(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        if not value:
+            raise ValueError("title cannot be blank")
+        return value
 
     @field_validator("isbn")
     @classmethod

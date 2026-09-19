@@ -17,6 +17,8 @@ from app.routers import auth, authors, books, borrowings, users
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+_docs_enabled = settings.environment.lower() != "production"
+
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
@@ -30,8 +32,8 @@ app = FastAPI(
         "- Consistent envelope responses\n\n"
         "Use the lock icon on the right and paste a token returned by `POST /api/auth/login`."
     ),
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url="/docs" if _docs_enabled else None,
+    redoc_url="/redoc" if _docs_enabled else None,
 )
 
 
@@ -81,9 +83,10 @@ async def integrity_error_handler(request: Request, exc: IntegrityError) -> JSON
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     logger.exception("Unhandled error on %s %s", request.method, request.url.path)
+    message = str(exc) if settings.debug else "Internal server error"
     return JSONResponse(
         status_code=500,
-        content=error("Internal server error"),
+        content=error(message),
     )
 
 
